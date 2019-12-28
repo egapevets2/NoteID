@@ -1,4 +1,4 @@
-// NoteList function
+// NoteList function x
 // inputs a buffer of samples, takes fft, outputs a list of peaks
 // subsequent processin can identify notes and harmonics, chords, whatever.
 
