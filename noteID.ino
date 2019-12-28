@@ -114,8 +114,8 @@ void SimInput(void)
                              sin(6.28 * f0 * pow(2.0, n2 / 12.0) * ((float)sampleCounter) * 0.5 / 4000.0);
 
 #ifdef USE_RECORDED_CHORD
-     samples[sampleCounter]=Chord[j++]; 
-#endif                       
+     samples[sampleCounter]=Chord[j++];
+#endif
 
     // Complex FFT functions require a coefficient for the imaginary part of the input.
     // Since we only have real data, set this coefficient to zero.
@@ -143,7 +143,10 @@ void setup() {
 
   SimInput();
 
-
+  Serial1.println("__samples");
+  for (i = 0; i < (FFT_SIZE * 2); i += 2)
+   Serial1.println(samples[i]);
+  Serial1.println("END");
 
   /*
     _____________________________________
@@ -154,6 +157,12 @@ void setup() {
       --------------\--/----\/    \__/------------------\__/----\/----\__/--
   */
   arm_mult_f32(hanningWindow, samples, samples, 2 * FFT_SIZE);
+ 
+   Serial1.println("__WindowedSamples");
+  for (i = 0; i < (FFT_SIZE * 2); i += 2)
+   Serial1.println(samples[i]);
+  Serial1.println("END");
+ 
 
   /*
      _______________
@@ -238,79 +247,24 @@ void setup() {
 pkDetect(magnitudesINTRP,N_INTERPOLATED_SAMPS, MAX_N_PEAKS,VpkList,ipkList);
 
 
+  Serial1.println("__magnitudes");
+for(i=0;i<N_INTERPOLATED_SAMPS;i++)    Serial1.println(magnitudes[i]);
+  Serial1.println("END");
+
+  Serial1.println("__magnitudesINTRP");
+for(i=0;i<N_INTERPOLATED_SAMPS;i++)    Serial1.println(magnitudesINTRP[i]);
+  Serial1.println("END");
 
 
+  Serial1.println("__VpkList");
+for(i=0;i<MAX_N_PEAKS;i++)    Serial1.println(VpkList[i]);
+  Serial1.println("END");
 
 
+  Serial1.println("__ipkList[");
+for(i=0;i<MAX_N_PEAKS;i++)    Serial1.println(ipkList[i]);
+  Serial1.println("END");
 
-
-  Serial1.print("magnitudesINTRP[");
-
-  Serial1.print(N_INTERPOLATED_SAMPS);
-    Serial1.println("];");
-
-
-
-
-
-for(i=0;i<N_INTERPOLATED_SAMPS;i++)    Serial1.println(magnitudesINTRP[i]); 
-
-
-  Serial1.print("VpkList[");
-  Serial1.print(MAX_N_PEAKS);
-    Serial1.println("];");
-for(i=0;i<MAX_N_PEAKS;i++)    Serial1.println(VpkList[i]); 
-
-
-
-  Serial1.print("ipkList[");
-  Serial1.print(MAX_N_PEAKS);
-    Serial1.println("];");
-for(i=0;i<MAX_N_PEAKS;i++)    Serial1.println(ipkList[i]); 
-
-
-
-/*
-#define NumCols 16
-#define Nprint (FFT_SIZE * L_upsampleFactor/2)
-  int iCol = 0;
-  int nRow = Nprint / NumCols;
-  int nExtra = Nprint - nRow * NumCols;
-
-  Serial1.print("Nprint,nRow,nCol,nExtra=");
-  Serial1.print(nRow); Serial1.print(",");
-  Serial1.print(NumCols); Serial1.print(",");
-  Serial1.print(nExtra); Serial1.println("");
-
-
-
-
-  for (i = 0; i < Nprint; i++)
-  {
-    Serial1.print(magnitudesINTRP[i]);
-    iCol++;
-    if (iCol == 16)
-    {
-      Serial1.println("");
-      iCol = 0;
-    }
-    else
-    {
-      Serial1.print(",");  Serial1.print(Nprint); Serial1.print(",");
-
-    }
-
-  }
-  if (nExtra > 0)
-  {
-    for (i = 0; i < (nExtra - 2); i++)
-      Serial1.print("0.07,");
-
-    Serial1.println("0");
-  }
-  Serial1.println("");
-
-  */
 
   Serial1.println("================================== D O N E");
 
