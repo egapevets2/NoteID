@@ -17,12 +17,19 @@ float magnitudes[FFT_SIZE];
 float magnitudesINTRP[N_INTERPOLATED_SAMPS];
 float hanningWindow[FFT_SIZE * 2];
 float FIRpState[(numTaps_intrpFIR / L_upsampleFactor) + FFT_SIZE - 1];
+float vMax;
+float LowE = 83.0;
 
-float VpkList[MAX_N_PEAKS];
-uint32_t ipkList[MAX_N_PEAKS];
-void pkDetect(float v[], uint32_t n, uint32_t Npeaks, float VpkList[], uint32_t ipkList[]);
+void pkDetect(float v[], uint32_t n, uint32_t Npeaks, peak_t pkLst[]);
 void getSpectrum() ;
 
+void NoteBinBuider(int LowE, float BinWidth, bin_t bin[]);
+void NoteID(peak_t pk[], bin_t bin[]);
+
+
+
+bin_t bins[NUM_NOTE_BINS];
+peak_t peaks[MAX_NUM_PEAKS];
 
 //-------------------------------------------------------------------------------------
 //                                                                SIMULATE GUITAR INPUT
@@ -71,6 +78,7 @@ void setup() {
   digitalWrite(POWER_LED_PIN, LOW);
 
 
+  NoteBinBuider(LowE, BIN_WIDTH, bins);
 
 
 
@@ -90,8 +98,8 @@ void setup() {
   Serial1.println("__numTaps_intrpFIR");
   Serial1.println(numTaps_intrpFIR);
   Serial1.println("END");
-  Serial1.println("__MAX_N_PEAKS");
-  Serial1.println(MAX_N_PEAKS);
+  Serial1.println("__MAX_NUM_PEAKS");
+  Serial1.println(MAX_NUM_PEAKS);
   Serial1.println("END");
   Serial1.println("__N_SAMPS_TO_INTERP");
   Serial1.println(N_SAMPS_TO_INTERP);
@@ -99,7 +107,88 @@ void setup() {
   Serial1.println("__N_INTERPOLATED_SAMPS");
   Serial1.println(N_INTERPOLATED_SAMPS);
   Serial1.println("END");
+  Serial1.println("__I_INTERP_0HZ");
+  Serial1.println(I_INTERP_0HZ);
+  Serial1.println("END");
+  Serial1.println("__QUIET_THRESH");
+  Serial1.println(QUIET_THRESH);
+  Serial1.println("END");
+  Serial1.println("__NUM_NOTE_BINS");
+  Serial1.println(NUM_NOTE_BINS);
+  Serial1.println("END");
+
+
+
+
   getSpectrum() ;
+
+
+
+
+
+  pkDetect(magnitudesINTRP, N_INTERPOLATED_SAMPS, MAX_NUM_PEAKS, peaks);
+
+
+
+  NoteID(peaks, bins);
+
+
+  Serial1.println("__Left");
+  for (i = 0; i < NUM_NOTE_BINS; i++)    Serial1.println(bins[i].Left);
+  Serial1.println("END");
+  Serial1.println("__Right");
+  for (i = 0; i < NUM_NOTE_BINS; i++)    Serial1.println(bins[i].Right);
+  Serial1.println("END");
+  Serial1.println("__Center");
+  for (i = 0; i < NUM_NOTE_BINS; i++)    Serial1.println(bins[i].Center);
+  Serial1.println("END");
+  Serial1.println("__Actual");
+  for (i = 0; i < NUM_NOTE_BINS; i++)    Serial1.println(bins[i].Actual);
+  Serial1.println("END");
+  Serial1.println("__playing");
+  for (i = 0; i < NUM_NOTE_BINS; i++)    Serial1.println(bins[i].playing);
+  Serial1.println("END");
+  Serial1.println("__dB_level");
+  for (i = 0; i < NUM_NOTE_BINS; i++)    Serial1.println(bins[i].vPeak);
+  Serial1.println("END");
+  Serial1.println("__NoteName");
+  for (i = 0; i < NUM_NOTE_BINS; i++)    Serial1.println(bins[i].NoteName);
+  Serial1.println("END");
+  Serial1.println("__String");
+  for (i = 0; i < NUM_NOTE_BINS; i++)    Serial1.println(bins[i].StringNum);
+  Serial1.println("END");
+
+
+
+
+
+
+  Serial1.println("__vMax");
+  Serial1.println(vMax);
+  Serial1.println("END");
+
+
+  Serial1.println("__magnitudes");
+  for (i = 0; i < N_SAMPS_TO_INTERP; i++)    Serial1.println(magnitudes[i]);
+  Serial1.println("END");
+
+  Serial1.println("__magnitudesINTRP");
+  for (i = 0; i < N_INTERPOLATED_SAMPS; i++)    Serial1.println(magnitudesINTRP[i]);
+  Serial1.println("END");
+
+
+  Serial1.println("__VpkList");
+  for (i = 0; i < MAX_NUM_PEAKS; i++)    Serial1.println(peaks[i].vPeak);
+  Serial1.println("END");
+
+
+  Serial1.println("__ipkList");
+  for (i = 0; i < MAX_NUM_PEAKS; i++)    Serial1.println(peaks[i].i);
+  Serial1.println("END");
+
+
+  Serial1.println("================================== D O N E");
+
 
 
 }

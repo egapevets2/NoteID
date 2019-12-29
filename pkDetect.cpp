@@ -11,16 +11,16 @@
 #define GoingDown  3
 #define RiseFallCountRequirement  5
 #include <SoftwareSerial.h>
+extern float vMax;
+void pkDetect(float v[], uint32_t n, uint32_t Npeaks, peak_t peaks[])
 
-void pkDetect(float v[], uint32_t n, uint32_t Npeaks, float VpkList[], uint32_t ipkList[])
 {
 
   int Counter;
   int pkState;
-  float k2Min = 0.01;  // notes must be this fraction of vMax
   uint32_t i = 1;
   uint32_t pkNum = 0;
-  float thrMin, vMax;
+  float thrMin;
   uint32_t iPeak;
   float vPeak;
   // Maximum of the whole spectrum - everything else is relative to this.
@@ -29,12 +29,17 @@ void pkDetect(float v[], uint32_t n, uint32_t Npeaks, float VpkList[], uint32_t 
               &vMax,
               &iPeak
              );
-  thrMin = k2Min * vMax;
+  thrMin = QUIET_THRESH * vMax;
+
+
+
+
+
 
   for (pkNum = 0; pkNum < Npeaks; pkNum++)
   {
-    VpkList[pkNum] = 1;
-    ipkList[pkNum] = 1;
+    peaks[pkNum].vPeak = -999.9;
+    peaks[pkNum].i = 1;
 
   }
   pkNum = 0;
@@ -102,8 +107,11 @@ void pkDetect(float v[], uint32_t n, uint32_t Npeaks, float VpkList[], uint32_t 
         {
           pkState = Silent;
 
-          VpkList[pkNum] = vPeak;
-          ipkList[pkNum] = iPeak;
+
+          peaks[pkNum].vPeak = vPeak;
+          peaks[pkNum].i = iPeak;
+
+
           pkNum++;
         }
         break;

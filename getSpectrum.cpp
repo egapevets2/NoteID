@@ -34,8 +34,8 @@ extern float magnitudesINTRP[N_INTERPOLATED_SAMPS];
 extern float hanningWindow[FFT_SIZE * 2];
 extern float FIRpState[(numTaps_intrpFIR / L_upsampleFactor) + FFT_SIZE - 1];
 
-extern float VpkList[MAX_N_PEAKS];
-extern uint32_t ipkList[MAX_N_PEAKS];
+extern float VpkList[MAX_NUM_PEAKS];
+extern uint32_t ipkList[MAX_NUM_PEAKS];
 void pkDetect(float v[], uint32_t n, uint32_t Npeaks, float VpkList[], uint32_t ipkList[]);
 
 //-------------------------------------------------------------------------------------
@@ -151,10 +151,11 @@ void getSpectrum() {
       cmplx mag takes in 2*FFT_size numbers, which is FFT_SIZE complex values,
       and it outputs the FFT_SIZE magnitudes of those.
 
-                    /\
-                    | |   __
-      magnitude ____/ \__/  \_________________________________
-
+                    /\             |     we over-sampled so
+                    | |   __       |---> don't care beyond here
+      magnitude ____/ \__/  \______|___________________________
+                                   |
+               N_SAMPS_TO_INTERP   |---> guitar spectrum not out here
   */
 
   arm_fir_interpolate_f32(&SinterpObject, magnitudes, magnitudesINTRP, N_SAMPS_TO_INTERP);
@@ -189,29 +190,7 @@ void getSpectrum() {
     __*____*        \*___*
   */
 
-  pkDetect(magnitudesINTRP, N_INTERPOLATED_SAMPS, MAX_N_PEAKS, VpkList, ipkList);
 
-
-  Serial1.println("__magnitudes");
-  for (i = 0; i < N_INTERPOLATED_SAMPS; i++)    Serial1.println(magnitudes[i]);
-  Serial1.println("END");
-
-  Serial1.println("__magnitudesINTRP");
-  for (i = 0; i < N_INTERPOLATED_SAMPS; i++)    Serial1.println(magnitudesINTRP[i]);
-  Serial1.println("END");
-
-
-  Serial1.println("__VpkList");
-  for (i = 0; i < MAX_N_PEAKS; i++)    Serial1.println(VpkList[i]);
-  Serial1.println("END");
-
-
-  Serial1.println("__ipkList[");
-  for (i = 0; i < MAX_N_PEAKS; i++)    Serial1.println(ipkList[i]);
-  Serial1.println("END");
-
-
-  Serial1.println("================================== D O N E");
 
 
 }
