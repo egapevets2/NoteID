@@ -7,6 +7,39 @@
 #include "Chord.h"
 
 
+
+
+
+
+
+
+// Which pin on the Arduino is connected to the NeoPixels?
+// On a Trinket or Gemma we suggest changing this to 1
+#define PIN            6
+
+
+// Color order, for more information see https://github.com/adafruit/Adafruit_NeoPixel/blob/master/Adafruit_NeoPixel.h
+uint8_t colorOrder = 0x52; //or just use NEO_GBR
+
+// Define new pointer for NeoPixel
+Adafruit_NeoPixel *pixels;
+
+
+int delayval = 100; // delay for half a second
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 char done_print_loop = 1;
 uint32_t i;
 
@@ -62,6 +95,12 @@ void SimInput(void)
     // Since we only have real data, set this coefficient to zero.
     samples[sampleCounter + 1] = 0.0;
   }
+
+
+
+
+
+
 }
 //-------------------------------------------------------------------------------------
 //                                                                      ARDUINO SETUP()
@@ -78,6 +117,14 @@ void setup() {
   digitalWrite(POWER_LED_PIN, LOW);
 
 
+
+  // Here is a good place to read numPixel & colorOrder from EEPROM or what ever.
+  // create a new NeoPixel instance with new values
+  pixels = new Adafruit_NeoPixel(LED_STRAND_LENGTH, PIN, colorOrder);
+  pixels->begin(); // This initializes the NeoPixel library.
+
+
+
   NoteBinBuider(LowE, BIN_WIDTH, bins);
 
 
@@ -86,6 +133,20 @@ void setup() {
 
 
 
+  Serial1.println("start processing the buffer");
+  unsigned long StartTime = micros();
+  getSpectrum() ;
+
+  pkDetect(magnitudesINTRP, N_INTERPOLATED_SAMPS, MAX_NUM_PEAKS, peaks);
+
+  NoteID(peaks, bins);
+
+  unsigned long EndTime = micros();
+
+
+
+
+  //#ifdef DEBUG_PRINT_ENABLE
   Serial1.println("__SAMPLE_RATE_HZ");
   Serial1.println(SAMPLE_RATE_HZ);
   Serial1.println("END");
@@ -116,23 +177,6 @@ void setup() {
   Serial1.println("__NUM_NOTE_BINS");
   Serial1.println(NUM_NOTE_BINS);
   Serial1.println("END");
-
-
-
-
-  getSpectrum() ;
-
-
-
-
-
-  pkDetect(magnitudesINTRP, N_INTERPOLATED_SAMPS, MAX_NUM_PEAKS, peaks);
-
-
-
-  NoteID(peaks, bins);
-
-
   Serial1.println("__Left");
   for (i = 0; i < NUM_NOTE_BINS; i++)    Serial1.println(bins[i].Left);
   Serial1.println("END");
@@ -159,10 +203,6 @@ void setup() {
   Serial1.println("END");
 
 
-
-
-
-
   Serial1.println("__vMax");
   Serial1.println(vMax);
   Serial1.println("END");
@@ -186,8 +226,11 @@ void setup() {
   for (i = 0; i < MAX_NUM_PEAKS; i++)    Serial1.println(peaks[i].i);
   Serial1.println("END");
 
-
+  Serial1.print("Time to convert buffer to note bins=");
+  Serial1.print((EndTime - StartTime) / 1000);
+  Serial1.println(" milliseconds");
   Serial1.println("================================== D O N E");
+  //#endif
 
 
 
@@ -199,6 +242,47 @@ void setup() {
 // own while(1==1), you block the serial port
 //
 void loop() {
+
+
+
+  // For a set of NeoPixels the first NeoPixel is 0, second is 1, all the way up to the count of pixels minus one.
+
+  for (int i = 0; i < NUM_NOTE_BINS; i++) {
+
+    // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
+    pixels->setPixelColor(i, pixels->Color(0, 150, 0)); // Moderately bright green color.
+
+    pixels->show(); // This sends the updated pixel color to the hardware.
+
+    delay(delayval); // Delay for a period of time (in milliseconds).
+
+  }
+
+  for (int i = 0; i < NUM_NOTE_BINS; i++) {
+
+    // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
+    pixels->setPixelColor(i, pixels->Color(150, 0, 0)); // Moderately bright green color.
+
+    pixels->show(); // This sends the updated pixel color to the hardware.
+
+    delay(delayval); // Delay for a period of time (in milliseconds).
+
+  }
+
+  for (int i = 0; i < NUM_NOTE_BINS; i++) {
+
+    // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
+    pixels->setPixelColor(i, pixels->Color(0, 0, 150)); // Moderately bright green color.
+
+    pixels->show(); // This sends the updated pixel color to the hardware.
+
+    delay(delayval); // Delay for a period of time (in milliseconds).
+
+  }
+
+
+
+
 
   digitalWrite(POWER_LED_PIN, HIGH);
   delay(250);

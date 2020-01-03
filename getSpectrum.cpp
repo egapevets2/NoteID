@@ -87,12 +87,12 @@ void hanning(void)
 void getSpectrum() {
   hanning();
   InitializeTheInterpolatorObject();
-
+#ifdef DEBUG_PRINT_ENABLE
   Serial1.println("__samples");
   for (i = 0; i < (FFT_SIZE * 2); i += 2)
     Serial1.println(samples[i]);
   Serial1.println("END");
-
+#endif
   /*
     _____________________________________
      ORIGINAL SIGNAL, FFT_SIZE points.
@@ -103,10 +103,13 @@ void getSpectrum() {
   */
   arm_mult_f32(hanningWindow, samples, samples, 2 * FFT_SIZE);
 
+#ifdef DEBUG_PRINT_ENABLE
+
   Serial1.println("__WindowedSamples");
   for (i = 0; i < (FFT_SIZE * 2); i += 2)
     Serial1.println(samples[i]);
   Serial1.println("END");
+#endif
 
 
   /*

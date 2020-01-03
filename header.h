@@ -1,6 +1,12 @@
 
 #define ARM_MATH_CM4
 #include <arm_math.h>
+#include <Adafruit_NeoPixel.h>
+
+//#define DEBUG_PRINT_ENABLE
+
+
+
 
 #define SAMPLE_RATE_HZ  8000             // samples per second.
 #define FFT_SIZE  1024              // Size of the FFT.  Realistically can only be at most 256
@@ -31,7 +37,7 @@
 #define   QUIET_THRESH  0.01  // notes must be this fraction of vMax
 
 #define   NUM_NOTE_BINS 49
-
+#define LED_STRAND_LENGTH 300
 #define USE_RECORDED_CHORD
 
 
