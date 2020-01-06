@@ -38,7 +38,6 @@ boolean samplingIsDone() {
 uint8_t GetNewSampleBuffer(void)
 {
   if (samplingIsDone()) {
-    samplingBegin();
     return(NEW_SAMPLE_BUFFER_AVAILABLE);
   }
   else

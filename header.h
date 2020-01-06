@@ -16,7 +16,7 @@
 #define ANALOG_READ_AVERAGING  16  // Number of samples to average with each ADC reading.
 
 
-#define LED_TEST_DELAYVAL 50
+#define LED_TEST_DELAYVAL 20
 
 /*
   an interpolated sample is the weighted average of this sample,

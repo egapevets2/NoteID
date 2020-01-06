@@ -30,7 +30,7 @@ float hanningWindow[FFT_SIZE * 2];
 float FIRpState[(numTaps_intrpFIR / L_upsampleFactor) + FFT_SIZE - 1];
 float vMax;
 float LowE = 83.0;
-
+char RealtimeToggle = 0;
 bin_t bins[NUM_NOTE_BINS];
 peak_t peaks[MAX_NUM_PEAKS];
 
@@ -49,12 +49,13 @@ uint8_t GetNewSampleBuffer();
 void LED_test(void);
 void debugPrintInSetup(void);
 void LED_animation(void);
+void RealtimeToggleIndicator(void);
 
 //-------------------------------------------------------------------------------------
 //                                                                      ARDUINO SETUP()
 // runs one time, at power-up.
 void setup() {
-  Serial1.begin(115200);
+  Serial1.begin(38400);
 
   Serial1.println("Guitar Spectral Peak Finder Test");
 
@@ -81,18 +82,18 @@ void setup() {
 
 
 
-  Serial1.println("start processing the buffer");
+  //Serial1.println("start processing the buffer");
   unsigned long StartTime = micros();
-  getSpectrum() ;
+  //getSpectrum() ;
 
-  pkDetect(magnitudesINTRP, N_INTERPOLATED_SAMPS, MAX_NUM_PEAKS, peaks);
+  //pkDetect(magnitudesINTRP, N_INTERPOLATED_SAMPS, MAX_NUM_PEAKS, peaks);
 
-  NoteID(peaks, bins);
+  //NoteID(peaks, bins);
 
-  unsigned long EndTime = micros();
-  Serial1.print("Time to convert buffer to note bins=");
-  Serial1.print((EndTime - StartTime) / 1000);
-  Serial1.println(" milliseconds");
+  // unsigned long EndTime = micros();
+  //Serial1.print("Time to convert buffer to note bins=");
+  //Serial1.print((EndTime - StartTime) / 1000);
+  //Serial1.println(" milliseconds");
 
 
 
@@ -107,7 +108,7 @@ void setup() {
   LED_test();
 
 
- debugPrintInSetup();
+  //debugPrintInSetup();
 
 
 
@@ -120,16 +121,23 @@ void setup() {
 //
 void loop() {
 
-if(GetNewSampleBuffer()==NEW_SAMPLE_BUFFER_AVAILABLE)
-{
-  
+  if (GetNewSampleBuffer() == NEW_SAMPLE_BUFFER_AVAILABLE)
+  {
+    //SimInput();
+
     getSpectrum() ;
-  pkDetect(magnitudesINTRP, N_INTERPOLATED_SAMPS, MAX_NUM_PEAKS, peaks);
-  NoteID(peaks, bins);
- LED_animation();
-}
+    samplingBegin();
+
+    pkDetect(magnitudesINTRP, N_INTERPOLATED_SAMPS, MAX_NUM_PEAKS, peaks);
+    NoteID(peaks, bins);
+    debugPrintInSetup();
+
+    //  while (1 == 1) {} //kill.
 
 
+    LED_animation();
+    RealtimeToggleIndicator();
 
+  }
 
 }

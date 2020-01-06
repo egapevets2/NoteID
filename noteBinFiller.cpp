@@ -47,7 +47,10 @@ float INTERPi2Freq(int i)
 {
   return (((float)(i - I_INTERP_0HZ)) * (SAMPLE_RATE_HZ / ((float)(FFT_SIZE * L_upsampleFactor))));
 }
-
+int Freq2INTERPi(float f)
+{
+  return (f/(SAMPLE_RATE_HZ / ((float)(FFT_SIZE * L_upsampleFactor)))+I_INTERP_0HZ);
+}
 
 void NoteBinBuider(int LowE, float BinWidth, bin_t bin[])
 {
@@ -85,9 +88,11 @@ void NoteID(peak_t pk[], bin_t bin[])
   {
     // If there is a spectral peak within the bin, then that bin is has a
     // note playing.
+
     float freq = INTERPi2Freq(pk[iPeak].i);
-    if ((freq > bin[iBin].Left) &&
-        (freq < bin[iBin].Right))
+    
+    if ((freq >= bin[iBin].Left) &&
+        (freq <= bin[iBin].Right))
     {
       bin[iBin].playing = 1;
       bin[iBin].vPeak = pk[iPeak].vPeak;
@@ -99,4 +104,5 @@ void NoteID(peak_t pk[], bin_t bin[])
       bin[iBin].playing = 0;
     }
   }
+
 }

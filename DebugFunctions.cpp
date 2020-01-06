@@ -9,11 +9,12 @@ extern float LowE;
 
 extern bin_t bins[];
 extern peak_t peaks[];
+float INTERPi2Freq(int i);
 
 void debugPrintInSetup(void)
 {
   int i;
-  //#ifdef DEBUG_PRINT_ENABLE
+  #ifdef DEBUG_PRINT_ENABLE
   Serial1.println("__SAMPLE_RATE_HZ");
   Serial1.println(SAMPLE_RATE_HZ);
   Serial1.println("END");
@@ -94,6 +95,14 @@ void debugPrintInSetup(void)
   Serial1.println("END");
 
 
+
+  Serial1.println("__FRQpkList");
+  for (i = 0; i < MAX_NUM_PEAKS; i++)    Serial1.println(INTERPi2Freq(peaks[i].i));
+  Serial1.println("END");
+
+  
+
+
   Serial1.println("================================== D O N E");
-  //#endif
+  #endif
 }

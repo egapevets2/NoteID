@@ -9,6 +9,7 @@ extern float hanningWindow[];
 extern float FIRpState[];
 extern float vMax;
 extern float LowE;
+extern char RealtimeToggle;
 
 extern bin_t bins[];
 extern peak_t peaks[];
@@ -35,5 +36,21 @@ void LED_animation(void)
     pixels->setPixelColor(i, pixels->Color(red, green, blue));
   }
   pixels->show(); // This sends the updated pixel color to the hardware.
+
+}
+
+
+void RealtimeToggleIndicator(void)
+{
+  if (RealtimeToggle == 0)
+  {
+    digitalWrite(POWER_LED_PIN, HIGH);
+    RealtimeToggle = 1;
+  }
+  else
+  {
+    digitalWrite(POWER_LED_PIN, LOW);
+    RealtimeToggle = 0;
+  }
 
 }

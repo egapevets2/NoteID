@@ -16,7 +16,7 @@ void LED_test(void)
   for (int i = 0; i < NUM_NOTE_BINS; i++) {
 
     // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
-    pixels->setPixelColor(i, pixels->Color(0, 150, 0)); // Moderately bright green color.
+    pixels->setPixelColor(i, pixels->Color(0, 150, 150)); // Moderately bright green color.
 
     pixels->show(); // This sends the updated pixel color to the hardware.
 
@@ -55,9 +55,9 @@ void LED_test(void)
   digitalWrite(POWER_LED_PIN, LOW);
   delay(250);
   digitalWrite(POWER_LED_PIN, HIGH);
-  delay(1000);
+  delay(250);
   digitalWrite(POWER_LED_PIN, LOW);
-  delay(1000);
+  delay(250);
   Serial1.println("================================== D O N E");
    
 }

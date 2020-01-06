@@ -11,18 +11,45 @@
 #define GoingDown  3
 #define RiseFallCountRequirement  5
 #include <SoftwareSerial.h>
+
+
+
+
+extern float samples[];
+extern float magnitudes[];
+extern float magnitudesINTRP[];
+extern float hanningWindow[];
+extern float FIRpState[];
 extern float vMax;
+extern float LowE;
+
+extern bin_t bins[];
+extern peak_t peaks[];
+float INTERPi2Freq(int i);
+
+
+
+
+int Freq2INTERPi(float f);
+
+
 void pkDetect(float v[], uint32_t n, uint32_t Npeaks, peak_t peaks[])
 
 {
 
   int Counter;
   int pkState;
-  uint32_t i = 1;
+  uint32_t i;
   uint32_t pkNum = 0;
   float thrMin;
   uint32_t iPeak;
   float vPeak;
+
+
+for (i=0;i<Freq2INTERPi(bins[0].Left);i++)v[i]=0.0;
+
+
+  
   // Maximum of the whole spectrum - everything else is relative to this.
   arm_max_f32(v,
               n,
@@ -43,7 +70,7 @@ void pkDetect(float v[], uint32_t n, uint32_t Npeaks, peak_t peaks[])
 
   }
   pkNum = 0;
-
+i=1;
   pkState = Silent;
   while ((i < n) && (pkNum < Npeaks))
   {
@@ -107,12 +134,15 @@ void pkDetect(float v[], uint32_t n, uint32_t Npeaks, peak_t peaks[])
         {
           pkState = Silent;
 
+          // ignore any low peaks, like 60hz hum, or dc...
+          if (INTERPi2Freq(iPeak) > bins[0].Left)
+          {
+            peaks[pkNum].vPeak = vPeak;
+            peaks[pkNum].i = iPeak;
 
-          peaks[pkNum].vPeak = vPeak;
-          peaks[pkNum].i = iPeak;
 
-
-          pkNum++;
+            pkNum++;
+          }
         }
         break;
     }
