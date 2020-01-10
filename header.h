@@ -9,7 +9,8 @@
 
 
 #define SAMPLE_RATE_HZ  8000             // samples per second.
-#define FFT_SIZE  1024              // Size of the FFT.  Realistically can only be at most 256
+#define FFT_SIZE  1024              // 
+#define SAMPS_PER_RUN 256           // every time you this many samples, run the algorithm on the last FFT_SIZE samples
 #define POWER_LED_PIN  13          // Output pin for power LED (pin 13 to use Teensy 3.0's onboard LED).
 #define AUDIO_INPUT_PIN  14        // Input ADC pin for audio data.
 #define ANALOG_READ_RESOLUTION  10 // Bits of resolution for the ADC.

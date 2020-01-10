@@ -22,8 +22,23 @@ Adafruit_NeoPixel *pixels;
 
 char done_print_loop = 1;
 uint32_t i;
+int kkk=0;
+
+// Interrupt Service Routine Variables.
 uint32_t sampleCounter;
+uint32_t iCirc;
+uint32_t iNxtRun;
+uint32_t iTransfer;
+int ADC_circ_buffer[FFT_SIZE];
+ int ISRtimeStamp[FFT_SIZE];
+ int samplesTS[FFT_SIZE];
+
 float samples[FFT_SIZE * 2];
+char ADC_semaphore;
+
+
+
+
 float magnitudes[FFT_SIZE];
 float magnitudesINTRP[N_INTERPOLATED_SAMPS];
 float hanningWindow[FFT_SIZE * 2];
@@ -50,6 +65,7 @@ void LED_test(void);
 void debugPrintInSetup(void);
 void LED_animation(void);
 void RealtimeToggleIndicator(void);
+void debugPrintSampsAndTimeStamps(void);
 
 //-------------------------------------------------------------------------------------
 //                                                                      ARDUINO SETUP()
@@ -110,6 +126,7 @@ void setup() {
 
   //debugPrintInSetup();
 
+    ADC_semaphore = 1;
 
 
 }
@@ -121,7 +138,7 @@ void setup() {
 //
 void loop() {
 
-  if (GetNewSampleBuffer() == NEW_SAMPLE_BUFFER_AVAILABLE)
+  if (ADC_semaphore == 0)
   {
     //SimInput();
 
@@ -132,12 +149,19 @@ void loop() {
     NoteID(peaks, bins);
     debugPrintInSetup();
 
-    //  while (1 == 1) {} //kill.
 
 
     LED_animation();
     RealtimeToggleIndicator();
+if(kkk++ == 10)
+{
+debugPrintSampsAndTimeStamps();
+     while (1 == 1) {} //kill.
+}
 
+
+    
+    ADC_semaphore = 1;
   }
 
 }

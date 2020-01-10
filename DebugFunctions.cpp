@@ -1,5 +1,7 @@
 #include "header.h"
 extern float samples[];
+extern int samplesTS[FFT_SIZE];
+
 extern float magnitudes[];
 extern float magnitudesINTRP[];
 extern float hanningWindow[];
@@ -10,6 +12,30 @@ extern float LowE;
 extern bin_t bins[];
 extern peak_t peaks[];
 float INTERPi2Freq(int i);
+
+
+
+void debugPrintSampsAndTimeStamps(void)
+{
+int i;
+  Serial1.println("__samplesTS");
+  for (i = 0; i < FFT_SIZE; i++)    Serial1.println(samplesTS[i]);
+  Serial1.println("END");
+  Serial1.println("__samples");
+  for (i = 0; i < FFT_SIZE; i++)    Serial1.println(samples[i*2]);
+  Serial1.println("END");
+
+}
+
+
+
+
+
+
+
+
+
+
 
 void debugPrintInSetup(void)
 {
