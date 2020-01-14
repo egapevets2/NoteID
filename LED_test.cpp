@@ -58,6 +58,6 @@ void LED_test(void)
   delay(250);
   digitalWrite(POWER_LED_PIN, LOW);
   delay(250);
-  Serial1.println("================================== D O N E");
+  Serial1.println("====================   L E D  T E S T  D O N E");
    
 }

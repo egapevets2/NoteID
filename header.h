@@ -17,6 +17,9 @@
 #define ANALOG_READ_AVERAGING  16  // Number of samples to average with each ADC reading.
 
 
+#define DELTA_T_ISR_TOLERANCE 30 // micro seconds
+
+
 #define LED_TEST_DELAYVAL 20
 
 /*

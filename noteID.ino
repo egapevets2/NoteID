@@ -22,16 +22,19 @@ Adafruit_NeoPixel *pixels;
 
 char done_print_loop = 1;
 uint32_t i;
-int kkk=0;
+int kkk = 0;
 
 // Interrupt Service Routine Variables.
 uint32_t sampleCounter;
 uint32_t iCirc;
 uint32_t iNxtRun;
 uint32_t iTransfer;
+uint32_t Old_T_isr;
+char ISR_state=0;
+
 int ADC_circ_buffer[FFT_SIZE];
- int ISRtimeStamp[FFT_SIZE];
- int samplesTS[FFT_SIZE];
+//int ISRtimeStamp[FFT_SIZE];//was for debug
+int samplesTS[FFT_SIZE];
 
 float samples[FFT_SIZE * 2];
 char ADC_semaphore;
@@ -71,9 +74,10 @@ void debugPrintSampsAndTimeStamps(void);
 //                                                                      ARDUINO SETUP()
 // runs one time, at power-up.
 void setup() {
-  Serial1.begin(38400);
+  Serial1.begin(9600);
 
   Serial1.println("Guitar Spectral Peak Finder Test");
+  Serial1.println("__samplesTS");
 
   // Turn on the power indicator LED.
   pinMode(POWER_LED_PIN, OUTPUT);
@@ -91,6 +95,7 @@ void setup() {
 
 
   NoteBinBuider(LowE, BIN_WIDTH, bins);
+  ADC_semaphore = 0;
 
 
 
@@ -126,7 +131,13 @@ void setup() {
 
   //debugPrintInSetup();
 
-    ADC_semaphore = 1;
+
+  for (i = 0; i < FFT_SIZE; i++)    samplesTS[i] = 660000 + i;
+
+
+
+
+  ADC_semaphore = 1;
 
 
 }
@@ -136,31 +147,43 @@ void setup() {
 // run.  if you kill it, by putting in your
 // own while(1==1), you block the serial port
 //
-void loop() {
 
-  if (ADC_semaphore == 0)
+// fake out a 30 ms process time, and
+// after awhile, stop and print out a buffer
+// you should see the adc'd sine wave, but with
+// some flat spots where you fixed the interrupt stuff.
+
+
+
+void loop() {
+delay(30);
+ // if (ADC_semaphore == 0)
   {
     //SimInput();
 
-    getSpectrum() ;
-    samplingBegin();
+    //getSpectrum() ;
 
-    pkDetect(magnitudesINTRP, N_INTERPOLATED_SAMPS, MAX_NUM_PEAKS, peaks);
-    NoteID(peaks, bins);
-    debugPrintInSetup();
+   // pkDetect(magnitudesINTRP, N_INTERPOLATED_SAMPS, MAX_NUM_PEAKS, peaks);
+    //NoteID(peaks, bins);
+    // debugPrintInSetup();
 
+   // RealtimeToggleIndicator();
 
-
+   // int t0 = micros();
     LED_animation();
-    RealtimeToggleIndicator();
-if(kkk++ == 10)
-{
-debugPrintSampsAndTimeStamps();
-     while (1 == 1) {} //kill.
-}
+   // int t1 = micros();
+   // Serial1.print("Animation Elapsed Time = ");
+   // Serial1.println(t1 - t0);
 
 
-    
+   // if (kkk++ == 100)
+    {
+     //  debugPrintSampsAndTimeStamps();
+     // while (1 == 1) {} //kill.
+    }
+
+
+
     ADC_semaphore = 1;
   }
 

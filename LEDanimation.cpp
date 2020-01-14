@@ -20,8 +20,23 @@ void LED_animation(void)
 {
   uint8_t red, green, blue;
 
+
+
+
+
+
+
+
+
+
+
+
   for (int i = 0; i < NUM_NOTE_BINS; i++) {
 
+
+
+    if ((rand() & 0x3f) == 0)bins[i].playing = 1;
+    else bins[i].playing = 0;
     // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
     if (bins[i].playing == 1)
     {
