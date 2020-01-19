@@ -8,15 +8,16 @@
 
 
 
-#define SAMPLE_RATE_HZ  8000             // samples per second.
+#define SAMPLE_RATE_HZ  8000.0             // samples per second.
 #define FFT_SIZE  1024              // 
+#define N_CIRC_BUF (FFT_SIZE+100) // longer than FFT so your read pointer does not crash into the ISR's write pointer.
 #define SAMPS_PER_RUN 256           // every time you this many samples, run the algorithm on the last FFT_SIZE samples
 #define POWER_LED_PIN  13          // Output pin for power LED (pin 13 to use Teensy 3.0's onboard LED).
 #define AUDIO_INPUT_PIN  14        // Input ADC pin for audio data.
 #define ANALOG_READ_RESOLUTION  10 // Bits of resolution for the ADC.
 #define ANALOG_READ_AVERAGING  16  // Number of samples to average with each ADC reading.
 
-
+#define SAMPLE_PERIOD_US (1000000.0/SAMPLE_RATE_HZ)
 #define DELTA_T_ISR_TOLERANCE 30 // micro seconds
 
 

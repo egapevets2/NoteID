@@ -13,8 +13,8 @@
 
 
 // Color order, for more information see https://github.com/adafruit/Adafruit_NeoPixel/blob/master/Adafruit_NeoPixel.h
-uint8_t colorOrder = 0x52; //or just use NEO_GBR
-
+//uint8_t colorOrder = 0x52; //or just use NEO_GBR
+uint8_t colorOrder = NEO_GRB + NEO_KHZ800;
 // Define new pointer for NeoPixel
 Adafruit_NeoPixel *pixels;
 
@@ -25,19 +25,24 @@ uint32_t i;
 int kkk = 0;
 
 // Interrupt Service Routine Variables.
-uint32_t sampleCounter;
-uint32_t iCirc;
-uint32_t iNxtRun;
-uint32_t iTransfer;
-uint32_t Old_T_isr;
-char ISR_state=0;
+uint16_t sampleCounter;
+volatile uint16_t iCirc,iRead;
+uint16_t iTransfer;
+volatile uint32_t Old_T_isr;
+volatile char ISR_state=0;
+volatile uint32_t LastGood_T_isr;
 
-int ADC_circ_buffer[FFT_SIZE];
-//int ISRtimeStamp[FFT_SIZE];//was for debug
-int samplesTS[FFT_SIZE];
+
+volatile uint32_t isrSkipList[32];
+volatile char iISRskip=0;
+// the circular buffer is a bit bigger than the full frame
+// for FFT, so you can read backwards from the present sample,
+// and not have the ISR overwrite the older samples
+volatile uint16_t ADC_circ_buffer[N_CIRC_BUF];
+
 
 float samples[FFT_SIZE * 2];
-char ADC_semaphore;
+volatile char ADC_semaphore;
 
 
 
@@ -54,6 +59,8 @@ peak_t peaks[MAX_NUM_PEAKS];
 
 IntervalTimer samplingTimer;
 
+
+
 //-------------------------------------------------------------------------------------
 //                                                                  function prototypes
 void pkDetect(float v[], uint32_t n, uint32_t Npeaks, peak_t pkLst[]);
@@ -69,6 +76,7 @@ void debugPrintInSetup(void);
 void LED_animation(void);
 void RealtimeToggleIndicator(void);
 void debugPrintSampsAndTimeStamps(void);
+void IntSamp2Float(void);
 
 //-------------------------------------------------------------------------------------
 //                                                                      ARDUINO SETUP()
@@ -78,7 +86,8 @@ void setup() {
 
   Serial1.println("Guitar Spectral Peak Finder Test");
   Serial1.println("__samplesTS");
-
+Serial1.print("Tsample microseconds=");
+Serial1.println(SAMPLE_PERIOD_US);
   // Turn on the power indicator LED.
   pinMode(POWER_LED_PIN, OUTPUT);
   digitalWrite(POWER_LED_PIN, HIGH);
@@ -123,16 +132,15 @@ void setup() {
   analogReadResolution(ANALOG_READ_RESOLUTION);
   analogReadAveraging(ANALOG_READ_AVERAGING);
   // Begin sampling audio
-  samplingBegin();
+  //samplingBegin();
 
 
-  LED_test();
+  //LED_test();
 
 
   //debugPrintInSetup();
 
 
-  for (i = 0; i < FFT_SIZE; i++)    samplesTS[i] = 660000 + i;
 
 
 
@@ -156,9 +164,10 @@ void setup() {
 
 
 void loop() {
-delay(30);
  // if (ADC_semaphore == 0)
   {
+    IntSamp2Float();
+
     //SimInput();
 
     //getSpectrum() ;
@@ -168,23 +177,31 @@ delay(30);
     // debugPrintInSetup();
 
    // RealtimeToggleIndicator();
+   delay(10);
 
-   // int t0 = micros();
-    LED_animation();
-   // int t1 = micros();
-   // Serial1.print("Animation Elapsed Time = ");
-   // Serial1.println(t1 - t0);
+   LED_animation();
 
 
-   // if (kkk++ == 100)
+
+    if (kkk++ == 100)
     {
-     //  debugPrintSampsAndTimeStamps();
-     // while (1 == 1) {} //kill.
+
+{
+      samplingTimer.end();
+  Serial1.println("--------------------------");
+  for(int i=0;i<32;i++)Serial1.println(isrSkipList[i]);
+}
+      
+      // debugPrintSampsAndTimeStamps();
+      while (1 == 1) {} //kill.
     }
 
 
 
     ADC_semaphore = 1;
   }
+
+
+
 
 }

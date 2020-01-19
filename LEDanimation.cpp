@@ -50,8 +50,21 @@ void LED_animation(void)
     }
     pixels->setPixelColor(i, pixels->Color(red, green, blue));
   }
-  pixels->show(); // This sends the updated pixel color to the hardware.
+  // for 49 pixels, I find this takes like 580, or 1580 microseconds.
+  //
+    unsigned long  t0a = micros();
 
+    unsigned long  t0 = micros();
+  pixels->show(); // This sends the updated pixel color to the hardware.
+    unsigned long  t1 = micros();
+
+    unsigned long  t1a = micros();
+
+  Serial1.print("Animation Elapsed Time = ");
+  Serial1.println(t1 - t0);
+
+  Serial1.print("Animation Elapsed Time a = ");
+  Serial1.println(t1a - t0a);
 }
 
 

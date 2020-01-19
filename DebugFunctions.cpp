@@ -1,6 +1,5 @@
 #include "header.h"
 extern float samples[];
-extern int samplesTS[FFT_SIZE];
 
 extern float magnitudes[];
 extern float magnitudesINTRP[];
@@ -19,11 +18,11 @@ void debugPrintSampsAndTimeStamps(void)
 {
 int i;
 
-  for (i = 0; i < FFT_SIZE; i++)    Serial1.println(samplesTS[i]);
-  Serial1.println("END");
-  //Serial1.println("__samples");
-  //for (i = 0; i < FFT_SIZE; i++)    Serial1.println(samples[i*2]);
+  //for (i = 0; i < FFT_SIZE; i++)    Serial1.println(samplesTS[i]);
   //Serial1.println("END");
+  Serial1.println("__samples");
+  for (i = 0; i < FFT_SIZE; i++)    Serial1.println(samples[i*2]);
+  Serial1.println("END");
 
 }
 

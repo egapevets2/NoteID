@@ -5,30 +5,34 @@
 extern IntervalTimer samplingTimer;
 extern float Chord[];
 
-extern uint32_t sampleCounter;
-extern uint32_t iCirc;
-extern uint32_t iNxtRun;
-extern uint32_t iTransfer;
-extern int ADC_circ_buffer[];
+extern uint16_t sampleCounter;
+extern uint16_t iCirc,iRead;
+extern uint16_t iTransfer;
+extern uint16_t ADC_circ_buffer[];
+
+
+
+extern uint32_t LastGood_T_isr;
+
+
+
+extern uint32_t isrSkipList[];
+extern char iISRskip;
+
 
 
 
 extern int ISRtimeStamp[FFT_SIZE];
 extern int samplesTS[FFT_SIZE];
 
-extern float samples[];
+extern float samples[FFT_SIZE * 2];
+
 extern char ADC_semaphore;
 
 extern uint32_t Old_T_isr;
 extern char ISR_state;
 
-int MissedSamples(int deltaMicroseconds)
-{
 
-
-
-  return (1);
-}
 
 
 
@@ -60,22 +64,23 @@ void samplingCallback() {
 
   uint32_t T_isr = micros();
 
-  int delta_T_isr = T_isr - Old_T_isr;
+  int T_isrDeviation = abs(T_isr - Old_T_isr - SAMPLE_PERIOD_US);
 
 
   switch (ISR_state)
   {
     case IN_SYNC:
-      if (abs(delta_T_isr) > DELTA_T_ISR_TOLERANCE)
+      if (T_isrDeviation > DELTA_T_ISR_TOLERANCE)
       {
         ISR_state = WAIT_FOR_SYNC;
 
       }
       else
       {
-        //  ISRtimeStamp[iCirc]=micros();//was for debug
         ADC_circ_buffer[iCirc] = analogRead(AUDIO_INPUT_PIN);
-        if (++iCirc >= FFT_SIZE) iCirc = 0;
+        if (++iCirc >= N_CIRC_BUF) iCirc = 0;
+
+        LastGood_T_isr=T_isr;
       }
       break;
 
@@ -86,7 +91,7 @@ void samplingCallback() {
       break;
 
     case RESYNC:
-      if (abs(delta_T_isr) > DELTA_T_ISR_TOLERANCE)
+      if (T_isrDeviation > DELTA_T_ISR_TOLERANCE)
       {
         ISR_state = WAIT_FOR_SYNC;
 
@@ -94,18 +99,36 @@ void samplingCallback() {
       else
       {
         int filler = analogRead(AUDIO_INPUT_PIN);
-        int N = MissedSamples(delta_T_isr);
+
+int N;
+        
+      // N = ((int)(((float)(T_isr-LastGood_T_isr))*(1.0/SAMPLE_PERIOD_US)));
+
+       // N=33;
+
+
+
+        isrSkipList[(iISRskip++)&0x01f]=(T_isr-LastGood_T_isr);
+             //   isrSkipList[(iISRskip++)&0x01f]=N;
+
+
+
+        N=3;
+
+        
         for (int i = 0; i < N; i++)
         {
           ADC_circ_buffer[iCirc] = filler;
-          if (++iCirc >= FFT_SIZE) iCirc = 0;
+          if (++iCirc >= N_CIRC_BUF) iCirc = 0;
         }
+                LastGood_T_isr=T_isr;
+
         ISR_state = IN_SYNC;
 
       }
       break;
 
-      
+
     default:
       ISR_state = IN_SYNC;
       break;
@@ -120,32 +143,33 @@ void samplingCallback() {
 
   if ((ADC_semaphore == 1) && (ISR_state == IN_SYNC))
   {
-    // iCirc indexes the OLDEST sample.
-    // starting with the oldest, transfer them all into the working buffer,
-    // and put iCirc back when you are done, so the next adc sample
-    // goes overwrites the oldest.
-    sampleCounter = 0;
-    for (iTransfer = 0; iTransfer < FFT_SIZE; iTransfer++)
-    {
-      samples[sampleCounter] = (float32_t)ADC_circ_buffer[iCirc];
-      // samplesTS[iTransfer] = ISRtimeStamp[iCirc];//was for debug
+    if (iCirc > 0)
+      iRead = iCirc - 1;
+    else
+      iRead = N_CIRC_BUF - 1;
 
-      if (++iCirc == FFT_SIZE) iCirc = 0;
-      // Complex FFT functions require a coefficient for the imaginary part of the input.
-      // Since we only have real data, set this coefficient to zero.
-      samples[sampleCounter + 1] = 0.0;
-      sampleCounter += 2;
-    }
-
-    ADC_semaphore = 0; // samples[] is ready to run
-
+    ADC_semaphore = 0; // samples[] is ready to transfer
   }
 }
+
+void IntSamp2Float(void)
+{
+  sampleCounter = (2*FFT_SIZE) - 1;
+  for (iTransfer = 0; iTransfer < FFT_SIZE; iTransfer++)
+  {
+        samples[sampleCounter--] =0;
+    samples[sampleCounter--] = (float)ADC_circ_buffer[iRead];
+   
+    if (iRead == 0) iRead=N_CIRC_BUF-1;
+    else iRead--;
+  }
+}
+
+
 
 void samplingBegin() {
   // Reset sample buffer position and start callback at necessary rate.
   sampleCounter = 0;
-  iNxtRun = 0;
   iCirc = 0;
   samplingTimer.begin(samplingCallback, 1000000 / SAMPLE_RATE_HZ);
 }
